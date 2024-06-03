@@ -1,4 +1,4 @@
-import { Duration } from "aws-cdk-lib";
+import { CfnOutput, Duration } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import GetsIPAddress from "./gets-ip-address";
 import { NetworkLoadBalancer, Protocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
@@ -39,6 +39,10 @@ export default class PrivateTCPListener extends Construct {
       port,
       targets: [new IpTarget(ipAddress, port)],
       protocol: Protocol.TCP,
+    });
+
+    new CfnOutput(this, "LBDomainName", {
+      value: this.lb.loadBalancerDnsName,
     });
   }
 

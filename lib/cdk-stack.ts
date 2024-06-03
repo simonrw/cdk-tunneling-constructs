@@ -23,7 +23,7 @@ export class CdkStack extends Stack {
       resource.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
-    const privateListener = new PrivateTCPListener(this, "TCPListener", {
+    new PrivateTCPListener(this, "TCPListener", {
       domainName: cluster.clusterEndpoint.hostname,
       port: cluster.clusterEndpoint.port,
       vpc,
@@ -33,10 +33,7 @@ export class CdkStack extends Stack {
       value: cluster.clusterEndpoint.hostname,
     });
     new CfnOutput(this, "ClusterPort", {
-      value: cluster.clusterEndpoint.toString(),
-    });
-    new CfnOutput(this, "NLBDomainName", {
-      value: privateListener.domainName(),
+      value: cluster.clusterEndpoint.port.toString(),
     });
   }
 };
