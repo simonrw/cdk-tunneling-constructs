@@ -7,17 +7,18 @@ import { Construct } from "constructs";
 
 interface GetsIPAddressProps {
   domainName: string,
+  timeout?: Duration,
 }
 
 export default class GetsIPAddress extends Construct {
   private cr: CustomResource;
 
-  constructor(scope: Construct, id: string, { domainName, }: GetsIPAddressProps) {
+  constructor(scope: Construct, id: string, { domainName, timeout }: GetsIPAddressProps) {
     super(scope, id);
 
     const fn = new NodejsFunction(this, "Handler", {
       runtime: Runtime.NODEJS_18_X,
-      timeout: Duration.minutes(2),
+      timeout: timeout || Duration.minutes(2),
     });
 
     const provider = new Provider(this, "Provider", {
