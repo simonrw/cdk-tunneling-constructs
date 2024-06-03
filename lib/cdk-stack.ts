@@ -2,9 +2,7 @@ import { CfnOutput, CfnResource, RemovalPolicy, Stack, type StackProps } from "a
 import { Construct } from "constructs";
 import * as neptune from '@aws-cdk/aws-neptune-alpha';
 import { IpAddresses, Vpc } from "aws-cdk-lib/aws-ec2";
-import { NetworkLoadBalancer, Protocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { IpTarget } from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
-import GetsIPAddress from "./constructs/gets-ip-address";
+import PrivateTCPListener from "./constructs/private-tcp-listener";
 
 
 export class CdkStack extends Stack {
@@ -25,39 +23,20 @@ export class CdkStack extends Stack {
       resource.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
-    // get ip address of the neptune cluster
-    const ipAddressFetcher = new GetsIPAddress(this, "GetsIPAddress", {
+    const privateListener = new PrivateTCPListener(this, "TCPListener", {
       domainName: cluster.clusterEndpoint.hostname,
-    });
-    const ipAddress = ipAddressFetcher.ipAddress();
-
-    const port = cluster.clusterEndpoint.port;
-
-    // add networking
-    const lb = new NetworkLoadBalancer(this, "LoadBalancer", {
+      port: cluster.clusterEndpoint.port,
       vpc,
-      internetFacing: true,
     });
-    const listener = lb.addListener("Listener", {
-      port: 8182,
-      protocol: Protocol.TCP,
-    });
-    listener.addTargets("Target", {
-      port,
-      targets: [new IpTarget(ipAddress, port)],
-      protocol: Protocol.TCP,
-    });
-    new CfnOutput(this, "ClusterIPAddress", {
-      value: ipAddress,
-    });
+
     new CfnOutput(this, "ClusterDomainName", {
       value: cluster.clusterEndpoint.hostname,
     });
     new CfnOutput(this, "ClusterPort", {
-      value: port.toString(),
+      value: cluster.clusterEndpoint.toString(),
     });
     new CfnOutput(this, "NLBDomainName", {
-      value: lb.loadBalancerDnsName,
+      value: privateListener.domainName(),
     });
   }
 };
