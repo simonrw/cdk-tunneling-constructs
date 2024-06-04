@@ -1,4 +1,4 @@
-import { CfnOutput, CfnResource, RemovalPolicy, ResolutionTypeHint, Stack, type StackProps } from "aws-cdk-lib";
+import { CfnOutput, CfnResource, NestedStack, RemovalPolicy, ResolutionTypeHint, Stack, type StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as neptune from '@aws-cdk/aws-neptune-alpha';
 import { IpAddresses, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
@@ -16,7 +16,7 @@ export class CdkStack extends Stack {
   }
 };
 
-class ElasticacheStack extends Stack {
+class ElasticacheStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -68,7 +68,7 @@ class ElasticacheStack extends Stack {
   }
 }
 
-class NeptuneStack extends Stack {
+class NeptuneStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
