@@ -12,7 +12,7 @@ npm install https://github.com/simonrw/cdk-tunneling-constructs
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
-import PrivateTCPListener from "./constructs/private-tcp-listener";
+import PrivateTCPListener from "tunneling-cdk-constructs/constructs/private-tcp-listener";
 
 class MyStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
