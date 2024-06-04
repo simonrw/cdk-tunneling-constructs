@@ -14,28 +14,18 @@ interface PrivateTCPListenerProps {
 
 export default class PrivateTCPListener extends Construct {
   private lb: NetworkLoadBalancer;
+  private ipAddress: string;
 
   constructor(scope: Construct, id: string, props: PrivateTCPListenerProps) {
     super(scope, id);
 
-    // get ip address of the neptune cluster
+    // input handling
     let domainName;
     if (props.domainName instanceof Reference) {
       domainName = Token.asString(props.domainName);
     } else {
       domainName = props.domainName;
     }
-
-    const ipAddressFetcher = new GetsIPAddress(this, "GetsIPAddress", {
-      domainName,
-    });
-    const ipAddress = ipAddressFetcher.ipAddress();
-
-    // add networking
-    this.lb = new NetworkLoadBalancer(this, "LoadBalancer", {
-      vpc: props.vpc,
-      internetFacing: true,
-    });
 
     let port;
     if (props.port instanceof Reference) {
@@ -44,6 +34,18 @@ export default class PrivateTCPListener extends Construct {
       port = props.port;
     }
 
+    // fetch the IP address of the domain
+    const ipAddressFetcher = new GetsIPAddress(this, "GetsIPAddress", {
+      domainName,
+    });
+    this.ipAddress = ipAddressFetcher.ipAddress();
+
+    // add networking
+    this.lb = new NetworkLoadBalancer(this, "LoadBalancer", {
+      vpc: props.vpc,
+      internetFacing: true,
+    });
+
     const listener = this.lb.addListener("Listener", {
       port,
       protocol: Protocol.TCP,
@@ -51,15 +53,17 @@ export default class PrivateTCPListener extends Construct {
 
     listener.addTargets("Target", {
       port,
-      targets: [new IpTarget(ipAddress, port)],
+      targets: [new IpTarget(this.ipAddress, port)],
       protocol: Protocol.TCP,
     });
 
+    // outputs
     new CfnOutput(this, "LBDomainName", {
       value: this.lb.loadBalancerDnsName,
     });
   }
 
+  // accessor for the domain name
   domainName(): string {
     return this.lb.loadBalancerDnsName;
   }
