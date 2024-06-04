@@ -11,7 +11,7 @@ export class CdkStack extends Stack {
     super(scope, id, props);
 
 
-    // new NeptuneStack(this, "NeptuneStack");
+    new NeptuneStack(this, "NeptuneStack");
     new ElasticacheStack(this, "ElasticacheStack");
   }
 };
