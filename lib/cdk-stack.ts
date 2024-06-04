@@ -1,7 +1,7 @@
 import { CfnOutput, CfnResource, NestedStack, RemovalPolicy, ResolutionTypeHint, Stack, type StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as neptune from '@aws-cdk/aws-neptune-alpha';
-import { IpAddresses, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
+import { IpAddresses, Peer, Port, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
 import PrivateTCPListener from "./constructs/private-tcp-listener";
 import { CfnCacheCluster, CfnSubnetGroup } from "aws-cdk-lib/aws-elasticache";
 
@@ -45,6 +45,7 @@ class ElasticacheStack extends NestedStack {
         vpc,
         allowAllOutbound: true,
       });
+    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTcp());
 
     const subnet = new CfnSubnetGroup(this, "SubnetGroup", {
       subnetIds: vpc.privateSubnets.map(s => s.subnetId),
