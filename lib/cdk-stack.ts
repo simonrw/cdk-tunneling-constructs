@@ -36,4 +36,4 @@ export class CdkStack extends Stack {
       value: cluster.clusterEndpoint.port.toString(),
     });
   }
-};
+}
