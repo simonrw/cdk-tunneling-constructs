@@ -1,14 +1,33 @@
-# Welcome to your CDK TypeScript project
+# Expose private resources to the public network
 
-This is a blank project for CDK development with TypeScript.
+**Do not use this** 😂
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Installation
 
-## Useful commands
+```bash
+npm install https://github.com/simonrw/cdk-tunneling-constructs
+```
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+```typescript
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
+
+import PrivateTCPListener from "./constructs/private-tcp-listener";
+
+class MyStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    // create your resource
+
+    // expose your resource
+    new PrivateTCPListener(this, "TCPListener", {
+      domainName: "", /* either string or Reference */
+      port: 10101, /* either number or Reference */
+      vpc,
+    });
+  }
+}
+```
+
+This generates a stack output that can be used to access the domain name and port.
