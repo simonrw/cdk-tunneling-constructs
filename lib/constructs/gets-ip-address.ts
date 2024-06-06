@@ -18,7 +18,7 @@ export default class GetsIPAddress extends Construct {
 
     const fn = new NodejsFunction(this, "Handler", {
       runtime: Runtime.NODEJS_18_X,
-      timeout: timeout || Duration.minutes(2),
+      timeout: timeout || Duration.minutes(10),
     });
 
     const provider = new Provider(this, "Provider", {
