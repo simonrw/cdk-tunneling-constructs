@@ -11,12 +11,28 @@ export class CdkStack extends Stack {
     super(scope, id, props);
 
 
-    new NeptuneStack(this, "NeptuneStack");
-    new ElasticacheStack(this, "ElasticacheStack");
+    const neptuneStack = new NeptuneStack(this, "NeptuneStack");
+    const esStack = new ElasticacheStack(this, "ElasticacheStack");
+
+    new CfnOutput(this, "NeptuneLBUrl", {
+      value: neptuneStack.lbURL,
+    });
+    new CfnOutput(this, "NeptuneLBPort", {
+      value: neptuneStack.lbPort.toString(),
+    });
+    new CfnOutput(this, "esLBUrl", {
+      value: esStack.lbURL,
+    });
+    new CfnOutput(this, "esLBPort", {
+      value: esStack.lbPort.toString(),
+    });
   }
 };
 
 class ElasticacheStack extends NestedStack {
+  readonly lbURL: string;
+  readonly lbPort: number;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -61,15 +77,21 @@ class ElasticacheStack extends NestedStack {
     });
     db.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    new PrivateTCPListener(this, "TCPListener", {
+    const tcpListener = new PrivateTCPListener(this, "TCPListener", {
       domainName: db.getAtt("RedisEndpoint.Address"),
       port: db.getAtt("RedisEndpoint.Port", ResolutionTypeHint.NUMBER),
       vpc,
     });
+
+    this.lbURL = tcpListener.url;
+    this.lbPort = tcpListener.port;
   }
 }
 
 class NeptuneStack extends NestedStack {
+  readonly lbURL: string;
+  readonly lbPort: number;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -87,7 +109,7 @@ class NeptuneStack extends NestedStack {
       resource.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
-    new PrivateTCPListener(this, "TCPListener", {
+    const privateListener = new PrivateTCPListener(this, "TCPListener", {
       domainName: cluster.clusterEndpoint.hostname,
       port: cluster.clusterEndpoint.port,
       vpc,
@@ -99,5 +121,8 @@ class NeptuneStack extends NestedStack {
     new CfnOutput(this, "ClusterPort", {
       value: cluster.clusterEndpoint.port.toString(),
     });
+
+    this.lbURL = privateListener.url;
+    this.lbPort = privateListener.port;
   }
 }

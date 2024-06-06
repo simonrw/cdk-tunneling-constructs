@@ -13,8 +13,8 @@ interface PrivateTCPListenerProps {
 }
 
 export default class PrivateTCPListener extends Construct {
-  private lb: NetworkLoadBalancer;
-  private ipAddress: string;
+  readonly url: string;
+  readonly port: number;
 
   constructor(scope: Construct, id: string, props: PrivateTCPListenerProps) {
     super(scope, id);
@@ -38,33 +38,31 @@ export default class PrivateTCPListener extends Construct {
     const ipAddressFetcher = new GetsIPAddress(this, "GetsIPAddress", {
       domainName,
     });
-    this.ipAddress = ipAddressFetcher.ipAddress();
+    const ipAddress = ipAddressFetcher.ipAddress();
 
     // add networking
-    this.lb = new NetworkLoadBalancer(this, "LoadBalancer", {
+    const lb = new NetworkLoadBalancer(this, "LoadBalancer", {
       vpc: props.vpc,
       internetFacing: true,
     });
 
-    const listener = this.lb.addListener("Listener", {
+    const listener = lb.addListener("Listener", {
       port,
       protocol: Protocol.TCP,
     });
 
     listener.addTargets("Target", {
       port,
-      targets: [new IpTarget(this.ipAddress, port)],
+      targets: [new IpTarget(ipAddress, port)],
       protocol: Protocol.TCP,
     });
 
     // outputs
     new CfnOutput(this, "LBDomainName", {
-      value: this.lb.loadBalancerDnsName,
+      value: lb.loadBalancerDnsName,
     });
-  }
 
-  // accessor for the domain name
-  domainName(): string {
-    return this.lb.loadBalancerDnsName;
+    this.url = lb.loadBalancerDnsName;
+    this.port = port;
   }
 }
